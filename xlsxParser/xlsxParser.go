@@ -10,12 +10,12 @@ import (
 type SWIFT struct {
 	ISO2 string
 	SWIFTcode string
-	codeType string
-	name string
-	address string
-	townName string
-	countryName string
-	timeZone string
+	CodeType string
+	Name string
+	Address string
+	TownName string
+	CountryName string
+	TimeZone string
 }
 
 func Parse(fileName string) []SWIFT {
@@ -44,15 +44,7 @@ func Parse(fileName string) []SWIFT {
 
 	for _, row := range rows {
 		SWIFTdata = append(SWIFTdata, SWIFT{
-			ISO2: row[0],
-			SWIFTcode: row[1],
-			codeType: row[2],
-			name: row[3],
-			address: row[4],
-			townName: row[5],
-			countryName: row[6],
-			timeZone: row[7],
-		})
+			row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7],})
 	}
 
 	return SWIFTdata

@@ -12,11 +12,11 @@ func main() {
 
 	SWIFTdata := xlsxParser.Parse("../Interns_2025_SWIFT_CODES.xlsx")
 
-	fmt.Println(SWIFTdata[0].ISO2)
+	fmt.Println(SWIFTdata[22].Address)
 
 	// STORE THE DATA IN THE MySQL DATABASE
 
-	databasecontrol.Test()
+	databasecontrol.Test(SWIFTdata)
 
 	// PROVIDE A REST API
 }
