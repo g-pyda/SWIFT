@@ -3,22 +3,14 @@ package xlsxParser
 import (
 	"fmt"
 	"log"
+	"strings"
+
+	"SWIFT/structs"
 
 	"github.com/xuri/excelize/v2"
 )
 
-type SWIFT struct {
-	ISO2 string
-	SWIFTcode string
-	CodeType string
-	Name string
-	Address string
-	TownName string
-	CountryName string
-	TimeZone string
-}
-
-func Parse(fileName string) []SWIFT {
+func Parse(fileName string) []structs.Xlsx_data {
 	// open the file and reading all the rows
 	file, err := excelize.OpenFile(fileName)
 	if err != nil {
@@ -36,15 +28,18 @@ func Parse(fileName string) []SWIFT {
 		rows = rows[1:]
 	} else {
 		fmt.Println("The file contains one or less lines, so is invalid!!!")
-		return []SWIFT{}
+		return []structs.Xlsx_data{}
 	}
 
 	// getting all the data from the specific rows
-	SWIFTdata := []SWIFT{}
+	SWIFTdata := []structs.Xlsx_data{}
 
 	for _, row := range rows {
-		SWIFTdata = append(SWIFTdata, SWIFT{
-			row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7],})
+		SWIFTdata = append(SWIFTdata, structs.Xlsx_data{
+			strings.ToUpper(row[0]), strings.ToUpper(row[1]), 
+			strings.ToUpper(row[2]), strings.ToUpper(row[4]), 
+			strings.ToUpper(row[5]), strings.ToUpper(row[6]), 
+			row[7],})
 	}
 
 	return SWIFTdata

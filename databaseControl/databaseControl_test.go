@@ -1,9 +1,11 @@
-package databasecontrol
+package databaseControl
 
 import (
 	"database/sql"
 	"errors"
 	"testing"
+
+	"SWIFT/structs"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -13,19 +15,19 @@ var testcases_creation = []struct {
 	expectedOutcome bool
 	expectedError error
 	tableName string
-	tableRows []tableRow
+	TableRows []structs.TableRow
 	addition string
 	}{
-		{"Valid table creation", true, nil, "users", []tableRow{
+		{"Valid table creation", true, nil, "users", []structs.TableRow{
 			{"id", "INT", " PRIMARY KEY AUTO_INCREMENT"},
 			{"name", "VARCHAR(100)", " NOT NULL"},
 		}, ", UNIQUE(name)"},
 		{ "Invalid table name", false, errors.New("invalid table name"),
-		"1invalid", []tableRow{
+		"1invalid", []structs.TableRow{
 			{"id", "INT", " PRIMARY KEY AUTO_INCREMENT"},
 		}, ""},
 		{ "Missing table rows", false, errors.New("empty table"),
-		 "empty_table", []tableRow{}, ""},
+		 "empty_table", []structs.TableRow{}, ""},
 }
 
 func TestCreateTable(t *testing.T) {
@@ -45,7 +47,7 @@ func TestCreateTable(t *testing.T) {
 		t.Run(testCase.name, func(t *testing.T){
 			assert := assert.New(t)
 
-			outcome, err := createTable(testdb, testCase.tableName, testCase.tableRows, testCase.addition)
+			outcome, err := createTable(testdb, testCase.tableName, testCase.TableRows, testCase.addition)
 
 			assert.Equal(testCase.expectedOutcome, outcome)
 			assert.Equal(testCase.expectedError, err)
