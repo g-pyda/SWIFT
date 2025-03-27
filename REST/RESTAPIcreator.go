@@ -1,28 +1,19 @@
 package REST
 
 import (
-	//"SWIFT/structs"
+	"SWIFT/databaseControl"
+	"SWIFT/structs"
+	"fmt"
 
 	"strings"
 
 	"net/http"
+
 	"github.com/gin-gonic/gin"
 )
 
-// User struct represents a user
-type User struct {
-	ID    int    `json:"id"`
-	Name  string `json:"name"`
-	Email string `json:"email"`
-}
-
-// Sample data (simulating a database)
-var users = []User{
-	{ID: 1, Name: "Alice", Email: "alice@example.com"},
-	{ID: 2, Name: "Bob", Email: "bob@example.com"},
-}
-
 func RunTheServer() *gin.Engine{
+	gin.SetMode(gin.ReleaseMode)
 	server := gin.Default()
 
 	// specifying the routes for the server requests
@@ -38,97 +29,84 @@ func getBySWIFTcode(c *gin.Context) {
 	SWIFTcode := c.Param("swift-code")
 
 	if strings.Contains(SWIFTcode, "XXX") { // SWIFT belongs to the headquarter
-
-		c.JSON(http.StatusBadRequest, gin.H{"message" : "The headquarter with the requested SWIFT code doesn't figure in the database"})
-
-
+		hq, valid, err := databaseControl.GetHeadquarter(SWIFTcode)
+		if !valid || err != nil {
+			if strings.Contains(err.Error(), "no headquarter found") {
+				c.JSON(http.StatusNotFound, gin.H{"message" : fmt.Sprintf("Error: %s", err.Error())})
+				return
+			}
+			c.JSON(http.StatusBadRequest, gin.H{"message" : fmt.Sprintf("Error: %s", err.Error())})
+			return
+		}
+		c.JSON(http.StatusOK, hq)
+		return
 
 	} else { // SWIFT belongs to the branch
-		
-
-		c.JSON(http.StatusBadRequest, gin.H{"message" : "The branch with the requested SWIFT code doesn't figure in the database"})
+		br, valid, err := databaseControl.GetBranch(SWIFTcode)
+		if !valid || err != nil {
+			if strings.Contains(err.Error(), "no branch found") {
+				c.JSON(http.StatusNotFound, gin.H{"message" : fmt.Sprintf("Error: %s", err.Error())})
+				return
+			}
+			c.JSON(http.StatusBadRequest, gin.H{"message" : fmt.Sprintf("Error: %s", err.Error())})
+			return
+		}
+		c.JSON(http.StatusOK, br)
+		return
 	}
 }
 
 func getAllFromCountry(c *gin.Context) {
-
+	iso2 := c.Param("ISO2")
+	country, valid, err := databaseControl.GetCountry(iso2)
+	if !valid || err != nil {
+		if strings.Contains(err.Error(), "no country found") {
+			c.JSON(http.StatusNotFound, gin.H{"message" : fmt.Sprintf("Error: %s", err.Error())})
+			return
+		}
+		c.JSON(http.StatusBadRequest, gin.H{"message" : fmt.Sprintf("Error: %s", err.Error())})
+		return
+	}
+	c.JSON(http.StatusOK, country)
 }
 
 func addEntry(c *gin.Context) {
+	var newEntry structs.ReqBranch
 
+	if err := c.ShouldBindJSON(&newEntry); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": fmt.Sprintf("Error: %s", err.Error())})
+		return
+	}
+
+	var added bool
+	var err error
+	var entry_type string
+
+	if newEntry.IsHeadquarter {
+		added, err = databaseControl.AddHeadquarter(newEntry)
+		entry_type = "headquarter"
+	} else {
+		added, err = databaseControl.AddBranch(newEntry)
+		entry_type = "branch"
+	}
+	
+	if !added || err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": fmt.Sprintf("Error: %s", err.Error())})
+		return
+	}
+	c.JSON(http.StatusCreated, gin.H{"message": fmt.Sprintf("New %s has been added succesfully", entry_type)})
 }
 
 func deleteEntry(c *gin.Context) {
-
+	SWIFTcode := c.Param("swift-code")
+	deleted, err := databaseControl.DeleteEntry(SWIFTcode)
+	if !deleted || err != nil {
+		if strings.Contains(err.Error(), "no entry found") {
+			c.JSON(http.StatusNotFound, gin.H{"message" : fmt.Sprintf("Error: %s", err.Error())})
+			return
+		}
+		c.JSON(http.StatusBadRequest, gin.H{"message" : fmt.Sprintf("Error: %s", err.Error())})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message" : "Entry has been deleted succesfully"})
 }
-
-// // Get all users
-// func getUsers(c *gin.Context) {
-// 	c.JSON(http.StatusOK, users)
-// }
-
-// // Get a user by ID
-// func getUserByID(c *gin.Context) {
-// 	id := c.Param("id")
-
-// 	for _, user := range users {
-// 		if id == string(rune(user.ID)) {
-// 			c.JSON(http.StatusOK, user)
-// 			return
-// 		}
-// 	}
-// 	c.JSON(http.StatusNotFound, gin.H{"message": "User not found"})
-// }
-
-// // Create a new user
-// func createUser(c *gin.Context) {
-// 	var newUser User
-
-// 	if err := c.ShouldBindJSON(&newUser); err != nil {
-// 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-// 		return
-// 	}
-
-// 	// Simulate ID assignment
-// 	newUser.ID = len(users) + 1
-// 	users = append(users, newUser)
-
-// 	c.JSON(http.StatusCreated, newUser)
-// }
-
-// // Update a user by ID
-// func updateUser(c *gin.Context) {
-// 	id := c.Param("id")
-// 	var updatedUser User
-
-// 	if err := c.ShouldBindJSON(&updatedUser); err != nil {
-// 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-// 		return
-// 	}
-
-// 	for i, user := range users {
-// 		if id == string(rune(user.ID)) {
-// 			users[i].Name = updatedUser.Name
-// 			users[i].Email = updatedUser.Email
-// 			c.JSON(http.StatusOK, users[i])
-// 			return
-// 		}
-// 	}
-
-// 	c.JSON(http.StatusNotFound, gin.H{"message": "User not found"})
-// }
-
-// // Delete a user by ID
-// func deleteUser(c *gin.Context) {
-// 	id := c.Param("id")
-
-// 	for i, user := range users {
-// 		if id == string(rune(user.ID)) {
-// 			users = append(users[:i], users[i+1:]...) // Remove user from slice
-// 			c.JSON(http.StatusOK, gin.H{"message": "User deleted"})
-// 			return
-// 		}
-// 	}
-
-// 	c.JSON(http.StatusNotFound, gin.H{"message": "User not found"})
-// }

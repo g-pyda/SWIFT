@@ -37,7 +37,7 @@ func Parse(fileName string) []structs.Xlsx_data {
 	for _, row := range rows {
 		SWIFTdata = append(SWIFTdata, structs.Xlsx_data{
 			strings.ToUpper(row[0]), strings.ToUpper(row[1]), 
-			strings.ToUpper(row[2]), strings.ToUpper(row[4]), 
+			strings.ToUpper(row[3]), strings.ToUpper(row[4]), 
 			strings.ToUpper(row[5]), strings.ToUpper(row[6]), 
 			row[7],})
 	}

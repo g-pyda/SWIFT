@@ -1,26 +1,54 @@
 package databaseControl
 
 import (
-	"log"
+	"SWIFT/structs"
 	"database/sql"
+	"fmt"
+	"log"
 )
 
 //------------------------------- FUNCTIONS USED IN THE REQUESTS ----------------------------//
 
-func AddCountry() (bool, error) {
+func AddHeadquarter(hq structs.ReqBranch) (bool, error) {
+	db, _, _ := ConnectToDb()
+	defer db.Close()
 
+	// checking if the country has to be added
+	countryExists, err := entryExists(db, "countries", "iso2", hq.CountryISO2)
+	if !countryExists && err == nil {
+		added, err := addCountry(db, hq.CountryISO2, hq.CountryName, "")
+		if !added || err != nil {
+			return false, fmt.Errorf("couldn't add the base country to the database")
+		}
+	}
+
+	added, err := addHeadquarter(db, hq.SwiftCode, hq.BankName, hq.Address, "", hq.CountryISO2)
+	if !added || err != nil {
+		return false, fmt.Errorf("couldn't add the headquarter to the database")
+	}
+
+	return true, nil
 }
 
-func AddTown() (bool, error) {
+func AddBranch(br structs.ReqBranch) (bool, error) {
+	db, _, _ := ConnectToDb()
+	defer db.Close()
 
-}
+	// checking if the country has to be added
+	countryExists, err := entryExists(db, "countries", "iso2", br.CountryISO2)
+	if !countryExists && err == nil {
+		added, err := addCountry(db, br.CountryISO2, br.CountryName, "")
+		if !added || err != nil {
+			return false, fmt.Errorf("couldn't add the base country to the database")
+		}
+	}
 
-func AddHeadquarter() (bool, error) {
+	added, err := addHeadquarter(db, br.SwiftCode, br.BankName, br.Address, "", br.CountryISO2)
+	if !added || err != nil {
+		return false, fmt.Errorf("couldn't add the branch to the database")
+	}
 
-}
-
-func AddBranch() (bool, error) {
-
+	return true, nil
 }
 
 //------------------------------ FUNCTIONS USED IN THE BACKGROUND ---------------------------//

@@ -11,7 +11,8 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-func ConnectToDb(dsn string) (*sql.DB, bool, error) {
+func ConnectToDb() (*sql.DB, bool, error) {
+	dsn := "SWIFTuser:SWIFTpass@tcp(localhost:8080)/swiftdb"
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
 		log.Fatal("Error connecting to the database:", err)
@@ -35,8 +36,7 @@ func ConnectToDb(dsn string) (*sql.DB, bool, error) {
 
 func AddTheInitialData(parsedData []structs.Xlsx_data) {
 	// opening a connection to the database
-	dsn := "SWIFTuser:SWIFTpass@tcp(localhost:8080)/swiftdb"
-	db, _, _ := ConnectToDb(dsn)
+	db, _, _ := ConnectToDb()
 	defer db.Close()
 
 	// adding the needed tables if they don't already exist
@@ -46,7 +46,6 @@ func AddTheInitialData(parsedData []structs.Xlsx_data) {
 			fmt.Println(err.Error())
 		}
 	}
-
 
 	// Insert data
 	var i_branch = []int{}
