@@ -1,7 +1,7 @@
 package databaseControl
 
 import (
-	"SWIFT/structs"
+	"SWIFT/src/structs"
 	"database/sql"
 	"fmt"
 	"log"
@@ -36,14 +36,14 @@ func AddBranch(br structs.ReqBranch) (bool, error) {
 
 	// checking if the country has to be added
 	countryExists, err := entryExists(db, "countries", "iso2", br.CountryISO2)
-	if !countryExists && err == nil {
+	if !countryExists {
 		added, err := addCountry(db, br.CountryISO2, br.CountryName, "")
 		if !added || err != nil {
 			return false, fmt.Errorf("couldn't add the base country to the database")
 		}
 	}
 
-	added, err := addHeadquarter(db, br.SwiftCode, br.BankName, br.Address, "", br.CountryISO2)
+	added, err := addBranch(db, br.SwiftCode, br.BankName, br.Address, "", br.SwiftCode[:len(br.SwiftCode)-3]+"XXX", br.CountryISO2)
 	if !added || err != nil {
 		return false, fmt.Errorf("couldn't add the branch to the database")
 	}

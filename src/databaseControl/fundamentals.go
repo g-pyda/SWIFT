@@ -1,18 +1,26 @@
 package databaseControl
 
 import (
-	"SWIFT/structs"
+	"SWIFT/src/structs"
 
 	"database/sql"
 	"fmt"
 	"log"
 	"strings"
+	"os"
 
 	_ "github.com/go-sql-driver/mysql"
 )
 
 func ConnectToDb() (*sql.DB, bool, error) {
-	dsn := "SWIFTuser:SWIFTpass@tcp(localhost:8080)/swiftdb"
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true",
+		os.Getenv("DB_USER"),
+		os.Getenv("DB_PASSWORD"),
+		os.Getenv("DB_HOST"),
+		os.Getenv("DB_PORT"),
+		os.Getenv("DB_NAME"),
+	)
+	
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
 		log.Fatal("Error connecting to the database:", err)
@@ -81,9 +89,6 @@ func AddTheInitialData(parsedData []structs.Xlsx_data) {
 					found_pref = pref + "XXX"
 					break;
 				}
-			}
-			if found_pref == "" {
-				fmt.Println("The branch ", parsedData[i].SWIFTcode, " doesn't have a headquarter")
 			}
 			addBranch(db, parsedData[i].SWIFTcode, parsedData[i].Name, parsedData[i].Address, 
 				parsedData[i].TownName, found_pref, parsedData[i].ISO2)

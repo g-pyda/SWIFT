@@ -1,8 +1,8 @@
 package REST
 
 import (
-	"SWIFT/databaseControl"
-	"SWIFT/structs"
+	"SWIFT/src/databaseControl"
+	"SWIFT/src/structs"
 	"fmt"
 
 	"strings"

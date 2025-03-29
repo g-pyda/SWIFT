@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"database/sql"
 
-	"SWIFT/structs"
+	"SWIFT/src/structs"
 )
 
 
@@ -52,6 +52,9 @@ func GetHeadquarter(swift_code string) (structs.ReqHeadquarter, bool, error) {
 	query = "SELECT name FROM countries WHERE iso2 = ?"
 	row = db.QueryRow(query, found.CountryISO2)
 	err = row.Scan(&found.CountryName)
+	if err != nil {
+		return structs.ReqHeadquarter{}, false, fmt.Errorf("something went wrond during the country data retrieval")
+	}
 
 	// getting the subsequent branches
 	branches := []structs.ReqBranch{}
@@ -71,6 +74,12 @@ func GetHeadquarter(swift_code string) (structs.ReqHeadquarter, bool, error) {
 			if err == sql.ErrNoRows {
 				break
 			}
+			return structs.ReqHeadquarter{}, false, fmt.Errorf("something went wrond during the subsequent branches data processing")
+		}
+		query = "SELECT name FROM countries WHERE iso2 = ?"
+		row = db.QueryRow(query, found_branch.CountryISO2)
+		err = row.Scan(&found_branch.CountryName)
+		if err != nil {
 			return structs.ReqHeadquarter{}, false, fmt.Errorf("something went wrond during the subsequent branches data processing")
 		}
 		branches = append(branches, found_branch)

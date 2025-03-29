@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"errors"
 
-	"SWIFT/structs"
+	"SWIFT/src/structs"
 
 	"database/sql"
 )

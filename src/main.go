@@ -1,20 +1,17 @@
 package main
 
 import (
-	"fmt"
 
-	"SWIFT/xlsxParser"
-	"SWIFT/REST"
-	"SWIFT/databaseControl"
+	"SWIFT/src/xlsxParser"
+	"SWIFT/src/REST"
+	"SWIFT/src/databaseControl"
 
 )
 
 func main() {
 	// PARSE THE .XLSX FILE 
 
-	SWIFTdata := xlsxParser.Parse("Interns_2025_SWIFT_CODES.xlsx")
-
-	fmt.Println(SWIFTdata[22].Address)
+	SWIFTdata := xlsxParser.Parse("/app/data/Interns_2025_SWIFT_CODES.xlsx")
 
 	// STORE THE DATA IN THE MySQL DATABASE
 
@@ -23,6 +20,6 @@ func main() {
 	// PROVIDE A REST API
 	server := REST.RunTheServer()
 
-	// Run the server on port 8080
+	// run the server on port 8080
 	server.Run(":8080")
 }

@@ -5,7 +5,7 @@ import (
 	"errors"
 	"testing"
 
-	"SWIFT/structs"
+	"SWIFT/src/structs"
 
 	"github.com/stretchr/testify/assert"
 )

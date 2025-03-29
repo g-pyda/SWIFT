@@ -5,7 +5,7 @@ import (
 	"log"
 	"strings"
 
-	"SWIFT/structs"
+	"SWIFT/src/structs"
 
 	"github.com/xuri/excelize/v2"
 )
