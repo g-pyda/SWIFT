@@ -31,7 +31,14 @@ cd SWIFT
 cd src
 ```
 
-2. **Run the project**
+2. **Install swagger to get the swagger UI**
+
+```sh
+go install github.com/swaggo/swag/cmd/swag@latest
+swag init -g ./main.go
+```
+
+3. **Run the project**
 
 ```sh
 go run .
