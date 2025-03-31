@@ -14,7 +14,7 @@ import (
 var Dsn = "SWIFTuser:SWIFTpass@tcp(localhost:3306)/swiftdb?parseTime=true"
 var Dsn_test = "SWIFTuser:SWIFTpass@tcp(localhost:3306)/testswiftdb"
 
-func connectToDb(dsn string) (*sql.DB, bool, error) {		
+func connectToDb(dsn string) (*sql.DB, bool, error) {	
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
 		db.Close()
