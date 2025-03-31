@@ -52,9 +52,10 @@ This project uses a multi-stage Docker build to optimize the container size:
 
 ## API Endpoints
 
+- `GET /v1/swift-codes` - Return all SWIFT codes 
 - `GET /v1/swift-codes/{swift-code}` - Retrieve details of a single SWIFT code whether for a headquarters or branches
 - `GET /v1/swift-codes/country/{countryISO2code}` - Return all SWIFT codes with details for a specific country (both headquarters and branches)
-- `POST /v1/swift-codes` - Adds new SWIFT code entries to the database for a specific country, given the request stucture is the following:
+- `POST /v1/swift-codes` - Add new SWIFT code entries to the database for a specific country, given the request stucture is the following:
 *{
     "address": string,
     "bankName": string,
@@ -64,6 +65,6 @@ This project uses a multi-stage Docker build to optimize the container size:
     "swiftCode": string,
 }
 *
-- `DELETE /v1/swift-codes/{swift-code}` - Deletes swift-code data if swiftCode matches the one in the database
+- `DELETE /v1/swift-codes/{swift-code}` - Delete swift-code data if swiftCode matches the one in the database
 
 

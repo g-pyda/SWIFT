@@ -5,6 +5,8 @@ import (
 	"fmt"
 
 	"database/sql"
+
+    "SWIFT/src-no-docker/structs"
 )
 
 func tableNameIsValid(tableName string) (bool, string) {
@@ -66,4 +68,27 @@ func entryExists(db *sql.DB, tableName string, columnName string, value string) 
 		return false, err
 	}
 	return count > 0, nil
+}
+
+// setup before the testing
+func SetUpBeforeAdd() bool {
+	db, _, _ := connectToDb(Dsn_test)
+	defer db.Close()
+
+	for _, table := range structs.Tables {
+		out, err := createTable(db, table.Name, table.Rows, table.Addition)
+		if !out || err != nil {
+			return false
+		}
+	}
+
+	queries := []string{"DELETE FROM branches", "DELETE FROM headquarters", "DELETE FROM countries"}
+	for _, q := range queries {
+		_, err := db.Exec(q)
+		if err != nil {
+			return false
+		}
+	}
+
+	return true
 }

@@ -110,9 +110,11 @@ func GetHeadquarter(dsn string, swift_code string) (structs.ReqHeadquarter, bool
 	query := "SELECT swift, name, address, country FROM headquarters WHERE swift = ?"
 	row := db.QueryRow(query, swift_code)
 
+
 	var found structs.ReqHeadquarter
 	found.IsHeadquarter = true
-	
+
+
 	err := row.Scan(&found.SwiftCode, &found.BankName, &found.Address, &found.CountryISO2)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -121,12 +123,14 @@ func GetHeadquarter(dsn string, swift_code string) (structs.ReqHeadquarter, bool
 		return structs.ReqHeadquarter{}, false, fmt.Errorf("something went wrong during the headquarter data processing")
 	}
 
+
 	query = "SELECT name FROM countries WHERE iso2 = ?"
 	row = db.QueryRow(query, found.CountryISO2)
 	err = row.Scan(&found.CountryName)
 	if err != nil {
 		return structs.ReqHeadquarter{}, false, fmt.Errorf("something went wrong during the country data retrieval")
 	}
+
 
 	// getting the subsequent branches
 	branches := []structs.ReqBranch{}
@@ -140,7 +144,9 @@ func GetHeadquarter(dsn string, swift_code string) (structs.ReqHeadquarter, bool
 
 	for rows.Next() {
 		var found_branch structs.ReqBranch
-		*found_branch.IsHeadquarter = false
+		if found_branch.IsHeadquarter != nil {
+			*found_branch.IsHeadquarter = false
+		}
 		err = rows.Scan(&found_branch.SwiftCode, &found_branch.BankName, &found_branch.Address, &found_branch.CountryISO2)
 		if err != nil {
 			if err == sql.ErrNoRows {
@@ -157,6 +163,7 @@ func GetHeadquarter(dsn string, swift_code string) (structs.ReqHeadquarter, bool
 		branches = append(branches, found_branch)
 	}
 	found.Branches = branches
+	fmt.Println("passed")
 
 	return found, true, nil
 }

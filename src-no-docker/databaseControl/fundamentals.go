@@ -11,6 +11,7 @@ import (
 )
 
 const Dsn = "SWIFTuser:SWIFTpass@tcp(localhost:3306)/swiftdb?parseTime=true"
+const Dsn_test = "SWIFTuser:SWIFTpass@tcp(localhost:3306)/testswiftdb"
 
 func connectToDb(dsn string) (*sql.DB, bool, error) {		
 	db, err := sql.Open("mysql", dsn)

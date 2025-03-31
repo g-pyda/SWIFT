@@ -6,6 +6,9 @@ import (
 	"fmt"
 
 	"strings"
+	"errors"
+	"encoding/json"
+	"github.com/go-playground/validator/v10"
 
 	"net/http"
 
@@ -17,12 +20,22 @@ func RunTheServer() *gin.Engine{
 	server := gin.Default()
 
 	// specifying the routes for the server requests
+	server.GET("/v1/swift-codes", getAll)
 	server.GET("/v1/swift-codes/:swift-code", getBySWIFTcode)
 	server.GET("/v1/swift-codes/country/:ISO2", getAllFromCountry)
 	server.POST("/v1/swift-codes", addEntry)
 	server.DELETE("/v1/swift-codes/:swift-code", deleteEntry)
 
 	return server;
+}
+
+func getAll(c *gin.Context) {
+	entries, valid, err := databaseControl.GetAll()
+	if !valid || err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message" : fmt.Sprintf("Error: %s", err.Error())})
+		return
+	}
+	c.JSON(http.StatusOK, entries)
 }
 
 func getBySWIFTcode(c *gin.Context) {
@@ -72,17 +85,45 @@ func getAllFromCountry(c *gin.Context) {
 
 func addEntry(c *gin.Context) {
 	var newEntry structs.ReqBranch
-
-	if err := c.ShouldBindJSON(&newEntry); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": fmt.Sprintf("Error: %s", err.Error())})
-		return
-	}
+	err := c.ShouldBindJSON(&newEntry)
+	if err != nil {
+        // Special handling for different error types
+        var jsonErr *json.UnmarshalTypeError
+        var syntaxErr *json.SyntaxError
+        var bindErr validator.ValidationErrors
+        
+        switch {
+        case errors.As(err, &jsonErr):
+            c.JSON(http.StatusBadRequest, gin.H{
+                "message": fmt.Sprintf("Error: invalid JSON type in %s (expected %s)", 
+				jsonErr.Field, jsonErr.Type.String()),
+            })
+        case errors.As(err, &syntaxErr):
+            c.JSON(http.StatusBadRequest, gin.H{
+                "message": fmt.Sprintf("Error: malformed JSON at %sth character", syntaxErr.Offset),
+            })
+        case errors.As(err, &bindErr):
+			message := "Error: validation failed"
+            for _, fieldErr := range bindErr {
+                message = message + fmt.Sprintf(" - field '%s' doesn't satisfy the  '%s' condition",
+				fieldErr.Field(), fieldErr.Tag())
+            }
+		
+            c.JSON(http.StatusBadRequest, gin.H{
+                "message": message,
+            })
+        default:
+            c.JSON(http.StatusBadRequest, gin.H{
+                "message": fmt.Sprintf("Error: Invalid request, %s error occured", err.Error()),
+            })
+        }
+        return
+    }
 
 	var added bool
-	var err error
 	var entry_type string
 
-	if newEntry.IsHeadquarter {
+	if *newEntry.IsHeadquarter {
 		added, err = databaseControl.AddHeadquarter(newEntry)
 		entry_type = "headquarter"
 	} else {

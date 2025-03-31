@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"strings"
 )
 
 //------------------------------- FUNCTIONS USED IN THE REQUESTS ----------------------------//
@@ -13,16 +14,24 @@ func AddHeadquarter(hq structs.ReqBranch) (bool, error) {
 	db, _, _ := ConnectToDb()
 	defer db.Close()
 
+	// checking if the headquarter already exists
+	hqExists, err := entryExists(db, "headquarters", "swift", strings.ToUpper(hq.SwiftCode))
+	if err != nil {
+		return false, fmt.Errorf("couldn't verify if the headquarter already exists")
+	} else if hqExists {
+		return false, fmt.Errorf("the headquarter with this swift code already exists")
+	}
+
 	// checking if the country has to be added
-	countryExists, err := entryExists(db, "countries", "iso2", hq.CountryISO2)
+	countryExists, err := entryExists(db, "countries", "iso2", strings.ToUpper(hq.CountryISO2))
 	if !countryExists && err == nil {
-		added, err := addCountry(db, hq.CountryISO2, hq.CountryName, "")
+		added, err := addCountry(db, strings.ToUpper(hq.CountryISO2), strings.ToUpper(hq.CountryName), "")
 		if !added || err != nil {
 			return false, fmt.Errorf("couldn't add the base country to the database")
 		}
 	}
 
-	added, err := addHeadquarter(db, hq.SwiftCode, hq.BankName, hq.Address, "", hq.CountryISO2)
+	added, err := addHeadquarter(db, strings.ToUpper(hq.SwiftCode), hq.BankName, hq.Address, "", strings.ToUpper(hq.CountryISO2))
 	if !added || err != nil {
 		return false, fmt.Errorf("couldn't add the headquarter to the database")
 	}
@@ -34,17 +43,35 @@ func AddBranch(br structs.ReqBranch) (bool, error) {
 	db, _, _ := ConnectToDb()
 	defer db.Close()
 
+	// checking if the branch already exists
+	brExists, err := entryExists(db, "branch", "swift", strings.ToUpper(br.SwiftCode))
+	if err != nil {
+		return false, fmt.Errorf("couldn't verify if the branch already exists")
+	} else if brExists {
+		return false, fmt.Errorf("the branch with this swift code already exists")
+	}
+
 	// checking if the country has to be added
-	countryExists, err := entryExists(db, "countries", "iso2", br.CountryISO2)
+	countryExists, _ := entryExists(db, "countries", "iso2", strings.ToUpper(br.CountryISO2))
 	if !countryExists {
-		added, err := addCountry(db, br.CountryISO2, br.CountryName, "")
+		added, err := addCountry(db, strings.ToUpper(br.CountryISO2), strings.ToUpper(br.CountryName), "")
 		if !added || err != nil {
 			return false, fmt.Errorf("couldn't add the base country to the database")
 		}
 	}
+	// checking if the headquarter exists (then its connected to the branch) or not (headquarter in branch is empty)
+	headquarterExists, err := entryExists(db, "headquarters", "swift", strings.ToUpper(br.SwiftCode[:len(br.SwiftCode)-3]+"XXX"))
+	var added bool
 
-	added, err := addBranch(db, br.SwiftCode, br.BankName, br.Address, "", br.SwiftCode[:len(br.SwiftCode)-3]+"XXX", br.CountryISO2)
-	if !added || err != nil {
+	if err != nil {
+		return false, fmt.Errorf("couldn't add the branch to the database")
+	} else if headquarterExists {
+		added, _ = addBranch(db, strings.ToUpper(br.SwiftCode), br.BankName, br.Address, "", strings.ToUpper(br.SwiftCode[:len(br.SwiftCode)-3]+"XXX"), strings.ToUpper(br.CountryISO2))
+	} else {
+		added, _ = addBranch(db, strings.ToUpper(br.SwiftCode), br.BankName, br.Address, "", "", strings.ToUpper(br.CountryISO2))
+	}
+
+	if !added {
 		return false, fmt.Errorf("couldn't add the branch to the database")
 	}
 

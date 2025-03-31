@@ -3,11 +3,17 @@ package databaseControl
 import (
 	"strings"
 	"fmt"
+	"database/sql"
 )
 
-func DeleteEntry(swift_code string) (bool, error){
+func DeleteEntry(dsn string, swift_code string) (bool, error){
 	// opening a connection to the database
-	db, _, _ := ConnectToDb()
+	var db *sql.DB
+	if len(dsn) > 0 {
+		db, _, _ = connectToDb(dsn)
+	} else {
+		db, _, _ = ConnectToDb()
+	}
 	defer db.Close()
 
 	//determining if the headquarter or the branch is to be deleted

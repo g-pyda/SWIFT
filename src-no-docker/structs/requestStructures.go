@@ -37,3 +37,7 @@ type ReqHeadBranInCountry struct {
 type ReqAll struct {
     Entries []ReqHeadBranInCountry `json:entries`
 }
+
+type ReqErr struct {
+    Message string `json:message`
+}

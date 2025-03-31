@@ -2,8 +2,10 @@ FROM golang:1.24.1 AS builder
 ENV GOOS=linux GOARCH=amd64 CGO_ENABLED=0
 
 WORKDIR /build
-COPY . .
+COPY ./go.mod ./go.sum .
 RUN go mod download
+
+COPY ./src ./data .
 RUN go build -o ./swift ./src/main.go
 
 FROM alpine:latest AS production

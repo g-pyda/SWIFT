@@ -7,6 +7,11 @@ type Testcase [T any] struct {
 	Input T
 }
 
+type Input_x_parse struct {
+	FileName string
+	SheetName string
+}
+
 type Input_cr_tbl struct {
 	TableName string
 	TableRows []TableRow
