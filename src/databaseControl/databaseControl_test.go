@@ -225,7 +225,7 @@ var testCases_AddCountry = []structs.Testcase[structs.Input_add_coun]{
 	{
 		Name: "Country already exists",
 		ExpectedOutcome: false,
-		ExpectedError: errors.New("Error 1062 (23000): Duplicate entry 'AA' for key 'countries.PRIMARY'"),
+		ExpectedError: errors.New("the country already exists"),
 		Input: structs.Input_add_coun{
 			ISO2: "AA",
 			Name: "aaa",
@@ -235,7 +235,7 @@ var testCases_AddCountry = []structs.Testcase[structs.Input_add_coun]{
 	{
 		Name: "Database error during country addition",
 		ExpectedOutcome: false,
-		ExpectedError:   errors.New("Error 1406 (22001): Data too long for column 'iso2' at row 1"),
+		ExpectedError:   errors.New("invalid ISO2 value"),
 		Input: structs.Input_add_coun{
 			ISO2: "FFF",
 			Name: "FFF",

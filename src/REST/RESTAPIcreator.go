@@ -17,7 +17,7 @@ import (
 
 // local wrappers for swagger 
 type BranchResponse structs.ReqBranch
-type HeadquarterResponse structs.ReqHeadquarter
+type BranchHeadquarterResponse structs.ReqHeadquarterBranch
 type CountryResponse structs.ReqCountry
 type AllResponse structs.ReqAll
 type MessageResponse structs.ReqErr
@@ -66,8 +66,7 @@ func getAll(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param swift-code path string true "SWIFT code" example("MRWORLDWXXX")
-// @Success 200 {object} BranchResponse "SWIFT branch entity" 
-// @Success 200 {object} HeadquarterResponse "SWIFT headquarter entity" 
+// @Success 200 {object} BranchHeadquarterResponse "SWIFT branch/headquarter entity" 
 // @Example {"address":"Sesame Street 8","bankName":"WorldWide Bank at Cracow","countryISO":"PB","countryName":"Pitbulland","isHeadquarter":false,"swiftCode":"MRWORLDWIDE"}
 // @Example {"address":"Sesame Street 8","bankName":"WorldWide Bank","countryISO":"PB","countryName":"Pitbulland","isHeadquarter":true,"swiftCode":"MRWORLDWXXX","branches":[{"address":"Sesame Street 8","bankName":"WorldWide Bank at Cracow","countryISO":"PB","countryName":"Pitbulland","isHeadquarter":false,"swiftCode":"MRWORLDWIDE"}]}
 // @Failure 404  {object}  MessageResponse  "No country found"

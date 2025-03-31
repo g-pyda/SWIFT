@@ -7,6 +7,25 @@ definitions:
           $ref: '#/definitions/structs.ReqHeadBranInCountry'
         type: array
     type: object
+  REST.BranchHeadquarterResponse:
+    properties:
+      address:
+        type: string
+      bankName:
+        type: string
+      branches:
+        items:
+          $ref: '#/definitions/structs.ReqBranch'
+        type: array
+      countryISO2:
+        type: string
+      countryName:
+        type: string
+      isHeadquarter:
+        type: boolean
+      swiftCode:
+        type: string
+    type: object
   REST.BranchResponse:
     properties:
       address:
@@ -45,25 +64,6 @@ definitions:
         items:
           $ref: '#/definitions/structs.ReqHeadBranInCountry'
         type: array
-    type: object
-  REST.HeadquarterResponse:
-    properties:
-      address:
-        type: string
-      bankName:
-        type: string
-      branches:
-        items:
-          $ref: '#/definitions/structs.ReqBranch'
-        type: array
-      countryISO2:
-        type: string
-      countryName:
-        type: string
-      isHeadquarter:
-        type: boolean
-      swiftCode:
-        type: string
     type: object
   REST.MessageResponse:
     properties:
@@ -233,9 +233,9 @@ paths:
       - application/json
       responses:
         "200":
-          description: SWIFT headquarter entity
+          description: SWIFT branch entity
           schema:
-            $ref: '#/definitions/REST.HeadquarterResponse'
+            $ref: '#/definitions/REST.BranchHeadquarterResponse'
         "404":
           description: No country found
           schema:

@@ -27,7 +27,7 @@ import (
 
 	"github.com/swaggo/gin-swagger"
     "github.com/swaggo/files"
-    _ "SWIFT/src/docs"
+    _ "SWIFT/docs"
 )
 
 func main() {

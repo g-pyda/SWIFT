@@ -91,7 +91,19 @@ func AddBranch(dsn string, br structs.ReqBranch) (bool, error) {
 //------------------------------ FUNCTIONS USED IN THE BACKGROUND ---------------------------//
 
 func addCountry(db *sql.DB, iso2 string, name string, timeZone string) (bool, error) {
-	_, err := db.Exec("INSERT INTO countries (iso2, name, time_zone) VALUES (?, ?, ?)", 
+	if len(iso2) != 2 {
+		return false, fmt.Errorf("invalid ISO2 value")
+	}
+
+	out, err := entryExists(db, "countries", "iso2", iso2)
+	if err != nil {
+		return false, fmt.Errorf("check of country existence failed")
+	} else if out {
+		return false, fmt.Errorf("the country already exists")
+	}
+
+
+	_, err = db.Exec("INSERT INTO countries (iso2, name, time_zone) VALUES (?, ?, ?)", 
 		strings.ToUpper(iso2), strings.ToUpper(name), timeZone)
 	if err != nil {
 		return false, err
