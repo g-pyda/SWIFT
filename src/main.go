@@ -50,6 +50,7 @@ func main() {
 		    os.Getenv("DB_TESTNAME"),
 	    )
 		fileAddress = "/app/data/Interns_2025_SWIFT_CODES.xlsx"
+		xlsxParser.TestFileAddress = "/app/data/test.xlsx"
 	}
 
 

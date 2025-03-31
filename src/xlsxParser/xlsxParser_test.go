@@ -1,7 +1,6 @@
-package xlsxParser_test
+package xlsxParser
 
 import (
-	"SWIFT/src/xlsxParser"
 	"SWIFT/src/structs"
 	"testing"
 	"fmt"
@@ -16,7 +15,7 @@ var testCases_Parse = []structs.Testcase[structs.Input_x_parse]{
 		ExpectedOutcome: true,
 		ExpectedError: nil,
 		Input: structs.Input_x_parse{
-			FileName: "../data/test.xlsx", 
+			FileName: TestFileAddress, 
 			SheetName: "Valid_sheet",
 		},
 	},
@@ -25,7 +24,7 @@ var testCases_Parse = []structs.Testcase[structs.Input_x_parse]{
 		ExpectedOutcome: false,
 		ExpectedError: fmt.Errorf("the file contains one or less lines, so is invalid"),
 		Input: structs.Input_x_parse{
-			FileName: "../data/test.xlsx", 
+			FileName: TestFileAddress, 
 			SheetName: "One-row-sheet",
 		},
 	},
@@ -43,7 +42,7 @@ var testCases_Parse = []structs.Testcase[structs.Input_x_parse]{
 		ExpectedOutcome: false,
 		ExpectedError: fmt.Errorf("failed to open the 'invalid_sheet' sheet in a file"),
 		Input: structs.Input_x_parse{
-			FileName: "../data/test.xlsx", 
+			FileName: TestFileAddress, 
 			SheetName: "invalid_sheet",
 		},
 	},
@@ -52,7 +51,7 @@ var testCases_Parse = []structs.Testcase[structs.Input_x_parse]{
 		ExpectedOutcome: false,
 		ExpectedError: fmt.Errorf("the file contains one or less lines, so is invalid"),
 		Input: structs.Input_x_parse{
-			FileName: "../data/test.xlsx", 
+			FileName: TestFileAddress, 
 			SheetName: "Empty-sheet",
 		},
 	},
@@ -61,7 +60,7 @@ var testCases_Parse = []structs.Testcase[structs.Input_x_parse]{
 func TestParse(t *testing.T) {
 	for _, tc := range testCases_Parse {
 		t.Run(tc.Name, func(t *testing.T) {
-			_, out, err := xlsxParser.Parse(tc.Input.FileName, tc.Input.SheetName)
+			_, out, err := Parse(tc.Input.FileName, tc.Input.SheetName)
 
 			assert.Equal(t, tc.ExpectedOutcome, out)
 			assert.Equal(t, tc.ExpectedError, err)

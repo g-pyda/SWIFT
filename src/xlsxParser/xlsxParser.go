@@ -9,6 +9,8 @@ import (
 	"github.com/xuri/excelize/v2"
 )
 
+var TestFileAddress = "../data/test.xlsx"
+
 func Parse(fileName string, sheetName string) ([]structs.Xlsx_data, bool, error) {
 	// open the file and reading all the rows
 	file, err := excelize.OpenFile(fileName)

@@ -5,10 +5,13 @@ WORKDIR /build
 COPY ./go.mod ./go.sum .
 RUN go mod download
 
-COPY ./src ./data .
+COPY ./src ./src
+COPY ./data ./data
 RUN go install github.com/swaggo/swag/cmd/swag@latest
-RUN swag init -g main.go
-ENV DOCKERIZED='yes'
+RUN swag init -g ./src/main.go
+ENV DOCKERIZED="yes"
+RUN ls 
+RUN pwd
 RUN go build -o ./swift ./src/main.go
 
 FROM alpine:latest AS production
