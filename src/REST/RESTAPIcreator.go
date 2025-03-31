@@ -66,9 +66,12 @@ func getAll(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param swift-code path string true "SWIFT code" example("MRWORLDWXXX")
-// @Success 200 {object} object "SWIFT entity" 
+// @Success 200 {object} BranchResponse "SWIFT branch entity" 
+// @Success 200 {object} HeadquarterResponse "SWIFT headquarter entity" 
 // @Example {"address":"Sesame Street 8","bankName":"WorldWide Bank at Cracow","countryISO":"PB","countryName":"Pitbulland","isHeadquarter":false,"swiftCode":"MRWORLDWIDE"}
 // @Example {"address":"Sesame Street 8","bankName":"WorldWide Bank","countryISO":"PB","countryName":"Pitbulland","isHeadquarter":true,"swiftCode":"MRWORLDWXXX","branches":[{"address":"Sesame Street 8","bankName":"WorldWide Bank at Cracow","countryISO":"PB","countryName":"Pitbulland","isHeadquarter":false,"swiftCode":"MRWORLDWIDE"}]}
+// @Failure 404  {object}  MessageResponse  "No country found"
+// @Failure 500  {object}  MessageResponse  "Internal server error"
 // @Router /swift-codes/{swift-code} [get]
 func getBySWIFTcode(c *gin.Context) {
 	SWIFTcode := c.Param("swift-code")
