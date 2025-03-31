@@ -6,6 +6,9 @@ COPY ./go.mod ./go.sum .
 RUN go mod download
 
 COPY ./src ./data .
+RUN go install github.com/swaggo/swag/cmd/swag@latest
+RUN swag init -g main.go
+ENV DOCKERIZED='yes'
 RUN go build -o ./swift ./src/main.go
 
 FROM alpine:latest AS production

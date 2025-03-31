@@ -4,15 +4,19 @@ import (
 	"SWIFT/src/structs"
 	"database/sql"
 	"fmt"
-	"log"
 	"strings"
 )
 
 //------------------------------- FUNCTIONS USED IN THE REQUESTS ----------------------------//
 
-func AddHeadquarter(hq structs.ReqBranch) (bool, error) {
-	db, _, _ := ConnectToDb()
-	defer db.Close()
+func AddHeadquarter(dsn string, hq structs.ReqBranch) (bool, error) {
+	var db *sql.DB
+	if len(dsn) > 0 {
+		db, _, _ = connectToDb(dsn)
+	} else {
+		db, _, _ = ConnectToDb()
+	}
+	defer db.Close()	
 
 	// checking if the headquarter already exists
 	hqExists, err := entryExists(db, "headquarters", "swift", strings.ToUpper(hq.SwiftCode))
@@ -39,12 +43,17 @@ func AddHeadquarter(hq structs.ReqBranch) (bool, error) {
 	return true, nil
 }
 
-func AddBranch(br structs.ReqBranch) (bool, error) {
-	db, _, _ := ConnectToDb()
+func AddBranch(dsn string, br structs.ReqBranch) (bool, error) {
+	var db *sql.DB
+	if len(dsn) > 0 {
+		db, _, _ = connectToDb(dsn)
+	} else {
+		db, _, _ = ConnectToDb()
+	}
 	defer db.Close()
 
 	// checking if the branch already exists
-	brExists, err := entryExists(db, "branch", "swift", strings.ToUpper(br.SwiftCode))
+	brExists, err := entryExists(db, "branches", "swift", strings.ToUpper(br.SwiftCode))
 	if err != nil {
 		return false, fmt.Errorf("couldn't verify if the branch already exists")
 	} else if brExists {
@@ -64,6 +73,7 @@ func AddBranch(br structs.ReqBranch) (bool, error) {
 	var added bool
 
 	if err != nil {
+		fmt.Println(err)
 		return false, fmt.Errorf("couldn't add the branch to the database")
 	} else if headquarterExists {
 		added, _ = addBranch(db, strings.ToUpper(br.SwiftCode), br.BankName, br.Address, "", strings.ToUpper(br.SwiftCode[:len(br.SwiftCode)-3]+"XXX"), strings.ToUpper(br.CountryISO2))
@@ -82,9 +92,8 @@ func AddBranch(br structs.ReqBranch) (bool, error) {
 
 func addCountry(db *sql.DB, iso2 string, name string, timeZone string) (bool, error) {
 	_, err := db.Exec("INSERT INTO countries (iso2, name, time_zone) VALUES (?, ?, ?)", 
-		iso2, name, timeZone)
+		strings.ToUpper(iso2), strings.ToUpper(name), timeZone)
 	if err != nil {
-		log.Fatal(err)
 		return false, err
 	}
 	return true, nil
@@ -92,9 +101,8 @@ func addCountry(db *sql.DB, iso2 string, name string, timeZone string) (bool, er
 
 func addHeadquarter(db *sql.DB, swift string, name string, address string, town string, country string) (bool, error) {
 	_, err := db.Exec("INSERT INTO headquarters (swift, name, address, town, country) VALUES (?, ?, ?, ?, ?)", 
-		swift, name, address, town, country)
+		strings.ToUpper(swift), name, address, town, strings.ToUpper(country))
 	if err != nil {
-		log.Fatal(err)
 		return false, err
 	}
 	return true, nil
@@ -104,13 +112,12 @@ func addBranch(db *sql.DB, swift string, name string, address string, town strin
 	var err error
 	if headquarter == "" {
 		_, err = db.Exec("INSERT INTO branches (swift, name, address, town, headquarter, country) VALUES (?, ?, ?, ?, NULL, ?)", 
-			swift, name, address, town, country)
+			strings.ToUpper(swift), name, address, town, strings.ToUpper(country))
 	} else {
 		_, err = db.Exec("INSERT INTO branches (swift, name, address, town, headquarter, country) VALUES (?, ?, ?, ?, ?, ?)", 
 			swift, name, address, town, headquarter, country)
 	}
 	if err != nil {
-		log.Fatal(err)
 		return false, err
 	}
 	return true, nil

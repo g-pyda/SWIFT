@@ -11,12 +11,12 @@ import (
 
 func createTable(db *sql.DB, tableName string, tableRows []structs.TableRow, tableAddition string) (bool, error) {
 	if len(tableRows) == 0 {
-		return false, errors.New("empty table")
+		return false, fmt.Errorf("the table doesn't have any columns")
 	}
 
 	validName, mes := tableNameIsValid(tableName)
 	if !validName {
-		return false, errors.New("invalid table name: " + tableName + mes)
+		return false, errors.New("invalid table name: " + mes)
 	}
 
 	// Start building the query

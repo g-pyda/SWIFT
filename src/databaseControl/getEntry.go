@@ -6,8 +6,13 @@ import (
 
 	"SWIFT/src/structs"
 )
-func GetAll() (structs.ReqAll, bool, error) {
-	db, _, _ := ConnectToDb()
+func GetAll(dsn string) (structs.ReqAll, bool, error) {
+	var db *sql.DB
+	if len(dsn) > 0 {
+		db, _, _ = connectToDb(dsn)
+	} else {
+		db, _, _ = ConnectToDb()
+	}
 	defer db.Close()
 
 	var found structs.ReqAll
@@ -61,15 +66,23 @@ func GetAll() (structs.ReqAll, bool, error) {
 	return found, true, nil
 }
 
-func GetBranch(swift_code string) (structs.ReqBranch, bool, error) {
-	db, _, _ := ConnectToDb()
+func GetBranch(dsn string, swift_code string) (structs.ReqBranch, bool, error) {
+	var db *sql.DB
+	if len(dsn) > 0 {
+		db, _, _ = connectToDb(dsn)
+	} else {
+		db, _, _ = ConnectToDb()
+	}
 	defer db.Close()
 
 	query := "SELECT swift, name, address, country FROM branches WHERE swift = ?"
 	row := db.QueryRow(query, swift_code)
 
 	var found structs.ReqBranch
-	*found.IsHeadquarter = false
+	if found.IsHeadquarter != nil {
+		*found.IsHeadquarter = false
+	}
+	
 	err := row.Scan(&found.SwiftCode, &found.BankName, &found.Address, &found.CountryISO2)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -85,15 +98,23 @@ func GetBranch(swift_code string) (structs.ReqBranch, bool, error) {
 	return found, true, nil
 }
 
-func GetHeadquarter(swift_code string) (structs.ReqHeadquarter, bool, error) {
-	db, _, _ := ConnectToDb()
+func GetHeadquarter(dsn string, swift_code string) (structs.ReqHeadquarter, bool, error) {
+	var db *sql.DB
+	if len(dsn) > 0 {
+		db, _, _ = connectToDb(dsn)
+	} else {
+		db, _, _ = ConnectToDb()
+	}
 	defer db.Close()
 
 	query := "SELECT swift, name, address, country FROM headquarters WHERE swift = ?"
 	row := db.QueryRow(query, swift_code)
 
+
 	var found structs.ReqHeadquarter
 	found.IsHeadquarter = true
+
+
 	err := row.Scan(&found.SwiftCode, &found.BankName, &found.Address, &found.CountryISO2)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -102,12 +123,14 @@ func GetHeadquarter(swift_code string) (structs.ReqHeadquarter, bool, error) {
 		return structs.ReqHeadquarter{}, false, fmt.Errorf("something went wrong during the headquarter data processing")
 	}
 
+
 	query = "SELECT name FROM countries WHERE iso2 = ?"
 	row = db.QueryRow(query, found.CountryISO2)
 	err = row.Scan(&found.CountryName)
 	if err != nil {
 		return structs.ReqHeadquarter{}, false, fmt.Errorf("something went wrong during the country data retrieval")
 	}
+
 
 	// getting the subsequent branches
 	branches := []structs.ReqBranch{}
@@ -121,7 +144,9 @@ func GetHeadquarter(swift_code string) (structs.ReqHeadquarter, bool, error) {
 
 	for rows.Next() {
 		var found_branch structs.ReqBranch
-		*found_branch.IsHeadquarter = false
+		if found_branch.IsHeadquarter != nil {
+			*found_branch.IsHeadquarter = false
+		}
 		err = rows.Scan(&found_branch.SwiftCode, &found_branch.BankName, &found_branch.Address, &found_branch.CountryISO2)
 		if err != nil {
 			if err == sql.ErrNoRows {
@@ -138,12 +163,18 @@ func GetHeadquarter(swift_code string) (structs.ReqHeadquarter, bool, error) {
 		branches = append(branches, found_branch)
 	}
 	found.Branches = branches
+	fmt.Println("passed")
 
 	return found, true, nil
 }
 
-func GetCountry(iso2 string) (structs.ReqCountry, bool, error) {
-	db, _, _ := ConnectToDb()
+func GetCountry(dsn string, iso2 string) (structs.ReqCountry, bool, error) {
+	var db *sql.DB
+	if len(dsn) > 0 {
+		db, _, _ = connectToDb(dsn)
+	} else {
+		db, _, _ = ConnectToDb()
+	}
 	defer db.Close()
 
 	query := "SELECT iso2, name FROM countries WHERE iso2 = ?"

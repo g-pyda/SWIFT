@@ -1,0 +1,233 @@
+basePath: /v1
+definitions:
+  REST.AllResponse:
+    properties:
+      entries:
+        items:
+          $ref: '#/definitions/structs.ReqHeadBranInCountry'
+        type: array
+    type: object
+  REST.BranchResponse:
+    properties:
+      address:
+        maxLength: 255
+        type: string
+      bankName:
+        maxLength: 255
+        type: string
+      countryISO2:
+        maxLength: 2
+        minLength: 2
+        type: string
+      countryName:
+        maxLength: 20
+        type: string
+      isHeadquarter:
+        type: boolean
+      swiftCode:
+        maxLength: 11
+        minLength: 11
+        type: string
+    required:
+    - bankName
+    - countryISO2
+    - countryName
+    - isHeadquarter
+    - swiftCode
+    type: object
+  REST.CountryResponse:
+    properties:
+      countryISO2:
+        type: string
+      countryName:
+        type: string
+      swiftCodes:
+        items:
+          $ref: '#/definitions/structs.ReqHeadBranInCountry'
+        type: array
+    type: object
+  REST.MessageResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  structs.ReqHeadBranInCountry:
+    properties:
+      address:
+        type: string
+      bankName:
+        type: string
+      countryISO2:
+        type: string
+      isHeadquarter:
+        type: boolean
+      swiftCode:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: This is a sample server for maintenance of SWIFTcode API.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: SWIFTcode API
+  version: "1.0"
+paths:
+  /swift-codes:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves all headquarters (without their subsequent branches)
+        and all branches from the SWIFT database
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of SWIFT entries
+          schema:
+            $ref: '#/definitions/REST.AllResponse'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/REST.MessageResponse'
+        "404":
+          description: No entries found
+          schema:
+            $ref: '#/definitions/REST.MessageResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/REST.MessageResponse'
+      summary: Get all SWIFT entities (headquarters and branches)
+      tags:
+      - swift-codes headquarter branch
+    post:
+      consumes:
+      - application/json
+      description: Add new headquarter or branch to the SWIFT database
+      parameters:
+      - description: Entry data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/REST.BranchResponse'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successful addition
+          schema:
+            $ref: '#/definitions/REST.MessageResponse'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/REST.MessageResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/REST.MessageResponse'
+      summary: Add a new entry
+      tags:
+      - headquarter branch
+  /swift-codes/{swift-code}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a headquarter (without the subsequent branches) or branch
+        specified by the SWIFT code
+      parameters:
+      - description: SWIFT code
+        example: '"MRWORLDWXXX"'
+        in: path
+        name: swift-code
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Entry successfully deleted
+          schema:
+            $ref: '#/definitions/REST.MessageResponse'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/REST.MessageResponse'
+        "404":
+          description: No entry found
+          schema:
+            $ref: '#/definitions/REST.MessageResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/REST.MessageResponse'
+      summary: Delete a SWIFT determined entry
+      tags:
+      - headquarter branch
+    get:
+      consumes:
+      - application/json
+      description: Returns the information about the headquarter (with subsequent
+        branches) or the branch
+      parameters:
+      - description: SWIFT code
+        example: '"MRWORLDWXXX"'
+        in: path
+        name: swift-code
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: SWIFT entity
+          schema:
+            type: object
+      summary: Get SWIFT entity
+      tags:
+      - swift-codes
+  /swift-codes/country/{ISO2}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a country's name, ISO2 and its subsequent headquarters
+        (without the subsequent branches) and branches from the SWIFT database
+      parameters:
+      - description: ISO2
+        example: '"PL"'
+        in: path
+        name: ISO2
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Country exists
+          schema:
+            $ref: '#/definitions/REST.CountryResponse'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/REST.MessageResponse'
+        "404":
+          description: No country found
+          schema:
+            $ref: '#/definitions/REST.MessageResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/REST.MessageResponse'
+      summary: Get data about the country and its subsequent entries
+      tags:
+      - country
+securityDefinitions:
+  BasicAuth:
+    type: basic
+swagger: "2.0"

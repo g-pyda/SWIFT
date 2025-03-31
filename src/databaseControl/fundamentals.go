@@ -5,40 +5,36 @@ import (
 
 	"database/sql"
 	"fmt"
-	"log"
 	"strings"
-	"os"
 
 	_ "github.com/go-sql-driver/mysql"
 )
 
-func ConnectToDb() (*sql.DB, bool, error) {
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true",
-		os.Getenv("DB_USER"),
-		os.Getenv("DB_PASSWORD"),
-		os.Getenv("DB_HOST"),
-		os.Getenv("DB_PORT"),
-		os.Getenv("DB_NAME"),
-	)
-	
+
+var Dsn = "SWIFTuser:SWIFTpass@tcp(localhost:3306)/swiftdb?parseTime=true"
+var Dsn_test = "SWIFTuser:SWIFTpass@tcp(localhost:3306)/testswiftdb"
+
+func connectToDb(dsn string) (*sql.DB, bool, error) {		
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
-		log.Fatal("Error connecting to the database:", err)
 		db.Close()
-		return nil, false, err; 
+		return nil, false, fmt.Errorf("error connecting to the database"); 
 	} else {
 		fmt.Println("Connection is valid")
 	}
 
 	err = db.Ping()
 	if err != nil {
-		log.Fatal("Error verifying connection:", err)
 		db.Close() 
-		return nil, false, err;
+		return nil, false, fmt.Errorf("error verifying connection");
 	} else {
 		fmt.Println("Ping is valid")
 	}
 	return db, true, nil
+}
+
+func ConnectToDb() (*sql.DB, bool, error) {
+	return connectToDb(Dsn)
 }
 
 
