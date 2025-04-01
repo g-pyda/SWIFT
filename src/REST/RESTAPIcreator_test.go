@@ -3,22 +3,37 @@ package REST
 import (
 	"SWIFT/src/databaseControl"
 	"SWIFT/src/structs"
+	
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"testing"
+	"fmt"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 )
+var restDsn = databaseControl.Dsn
 
 func setUpBeforeRun() bool{
-	out := databaseControl.SetUpBeforeAdd()
+	// checking if the app is runing in Docker
+	value, exists := os.LookupEnv("DOCKERIZED")
+	if exists && value == "yes"{
+		fmt.Println("entered")
+		restDsn = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true",
+	    	os.Getenv("DB_USER"),
+	    	os.Getenv("DB_PASSWORD"),
+	    	os.Getenv("DB_HOST"),
+	    	os.Getenv("DB_PORT"),
+	    	os.Getenv("DB_TESTNAME"),
+	    )
+	}
+	out := databaseControl.SetUpBeforeAdd(restDsn)
 	if !out {
 		return false
 	}
 
-	out, err := databaseControl.AddBranch(databaseControl.Dsn, structs.ReqBranch{
+	out, err := databaseControl.AddBranch(restDsn, structs.ReqBranch{
 		Address: "ssssssss",
 		BankName: "ssss ss",
 		CountryISO2: "ss",
@@ -27,10 +42,11 @@ func setUpBeforeRun() bool{
 	})
 
 	if !out || err != nil {
+		fmt.Println(err)
 		return false
 	}
 
-	out, err = databaseControl.AddHeadquarter(databaseControl.Dsn, structs.ReqBranch{
+	out, err = databaseControl.AddHeadquarter(restDsn, structs.ReqBranch{
 		Address: "ssssssss",
 		BankName: "ssss ss",
 		CountryISO2: "ss",
@@ -39,6 +55,7 @@ func setUpBeforeRun() bool{
 	})
 
 	if !out || err != nil {
+		fmt.Println(err)
 		return false
 	}
 
@@ -53,7 +70,7 @@ func TestIsSafe(t* testing.T) {
 		}
 		out := setUpBeforeRun()
 		if !out {
-			t.Fatal("Set up ofthe enviromnent for the test failed")
+			t.Fatal("Set up of the environment for the test failed")
 		}
 	})
 }
@@ -80,6 +97,12 @@ func TestGetAll(t *testing.T) {
 
 			assert.Equal(t, http.StatusOK, resp.Code)
 		})
+	}
+
+	if !t.Failed() {
+		os.Setenv("rest_getall", "true") 
+	} else {
+		os.Setenv("rest_getall", "false")
 	}
 }
 
@@ -128,6 +151,12 @@ func TestGetBySWIFT(t *testing.T) {
 			}
 		})
 	}
+
+	if !t.Failed() {
+		os.Setenv("rest_getswift", "true") 
+	} else {
+		os.Setenv("rest_getswift", "false")
+	}
 }
 
 var testCases_DeleteEntry = []structs.Testcase[string]{
@@ -175,4 +204,21 @@ func TestDeleteEntry(t *testing.T) {
 			}
 		})
 	}
+
+	if !t.Failed() {
+		os.Setenv("rest_delete", "true") 
+	} else {
+		os.Setenv("rest_delete", "false")
+	}
+}
+
+// EVALUATION - DID ALL THE TESTS PASS?
+func TestAllPassed(t * testing.T) {
+	t.Run("Package 'REST' - successfull testing", func(t *testing.T) {
+		if os.Getenv("rest_getall") == "false" || os.Getenv("rest_getswift") == "false" || os.Getenv("rest_delete") == "false" {
+			fmt.Println("TESTS_PASSED=yes")
+			t.Fatalf("The package 'REST' didn't pass all the tests")
+		}
+		fmt.Println("TESTS_PASSED=no")
+	})
 }

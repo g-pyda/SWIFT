@@ -9,14 +9,15 @@ COPY ./src ./src
 COPY ./data ./data
 RUN go install github.com/swaggo/swag/cmd/swag@latest
 RUN swag init -g ./src/main.go
+
 RUN go build -o ./swift ./src/main.go
 
 FROM alpine:latest AS production
 
 WORKDIR /app
 COPY --from=builder /build/swift ./swift
-RUN chmod +x /app/swift
+COPY --from=builder /build/data ./data
 
-COPY --from=builder /build/data/ ./data/
+RUN chmod +x /app/swift
 
 CMD ["./swift"]

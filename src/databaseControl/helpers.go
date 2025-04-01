@@ -71,16 +71,19 @@ func entryExists(db *sql.DB, tableName string, columnName string, value string) 
 }
 
 // setup before the testing
-func SetUpBeforeAdd() bool {
-	db, _, _ := connectToDb(Dsn_test)
+func SetUpBeforeAdd(dsn string) bool {
+	db, _, _ := connectToDb(dsn)
 	defer db.Close()
 
+    fmt.Println("entered")
 	for _, table := range structs.Tables {
 		out, err := createTable(db, table.Name, table.Rows, table.Addition)
 		if !out || err != nil {
+            fmt.Println(err)
 			return false
 		}
 	}
+    fmt.Println("entered")
 
 	queries := []string{"DELETE FROM branches", "DELETE FROM headquarters", "DELETE FROM countries"}
 	for _, q := range queries {
@@ -89,6 +92,7 @@ func SetUpBeforeAdd() bool {
 			return false
 		}
 	}
+    fmt.Println("entered")
 
 	return true
 }

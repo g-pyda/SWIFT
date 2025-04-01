@@ -185,7 +185,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "SWIFT branch entity",
+                        "description": "SWIFT branch/headquarter entity",
                         "schema": {
                             "$ref": "#/definitions/REST.BranchHeadquarterResponse"
                         }

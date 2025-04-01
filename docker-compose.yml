@@ -1,3 +1,7 @@
+networks:
+  swift_network:
+    driver: bridge
+
 services:
   app:
     build: 
@@ -15,9 +19,12 @@ services:
       DB_PASSWORD: swiftpass
       DB_NAME: swiftdb
       DB_TESTNAME: testswiftdb
-      DOCKERIZED: "yes"
+      DOCKERIZED: yes
+      TESTING: no
     volumes:
       - ./docs:/app/docs
+    networks:
+      - swift_network
 
   db:
     image: mysql:8
@@ -34,8 +41,7 @@ services:
       interval: 5s
       timeout: 10s
       retries: 10
-
-networks:
-  default:
-    name: swift_network
-    driver: bridge
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - swift_network

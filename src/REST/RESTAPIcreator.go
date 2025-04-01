@@ -3,11 +3,13 @@ package REST
 import (
 	"SWIFT/src/databaseControl"
 	"SWIFT/src/structs"
-	
+	"os"
+
+	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
-	"errors"
-	"encoding/json"
+
 	"github.com/go-playground/validator/v10"
 
 	"net/http"
@@ -15,7 +17,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// local wrappers for swagger 
+// local wrappers for swagger
 type BranchResponse structs.ReqBranch
 type BranchHeadquarterResponse structs.ReqHeadquarterBranch
 type CountryResponse structs.ReqCountry
@@ -48,7 +50,18 @@ func RunTheServer() *gin.Engine{
 // @Failure      500  {object}  MessageResponse  "Internal server error"
 // @Router       /swift-codes [get]
 func getAll(c *gin.Context) {
-    entries, valid, err := databaseControl.GetAll("")
+	dsn := ""
+	if os.Getenv("DOCKERIZED") == "yes" && os.Getenv("TESTING") == "yes" {
+		dsn = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true",
+	    	os.Getenv("DB_USER"),
+	    	os.Getenv("DB_PASSWORD"),
+	    	os.Getenv("DB_HOST"),
+	    	os.Getenv("DB_PORT"),
+	    	os.Getenv("DB_TESTNAME"),
+	    )
+	}
+
+    entries, valid, err := databaseControl.GetAll(dsn)
     if !valid || err != nil {
         c.JSON(http.StatusBadRequest, structs.ReqErr{
             Message: fmt.Sprintf("Error: %s", err.Error()),
@@ -73,10 +86,21 @@ func getAll(c *gin.Context) {
 // @Failure 500  {object}  MessageResponse  "Internal server error"
 // @Router /swift-codes/{swift-code} [get]
 func getBySWIFTcode(c *gin.Context) {
+	dsn := ""
+	if os.Getenv("DOCKERIZED") == "yes" && os.Getenv("TESTING") == "yes" {
+		dsn = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true",
+	    	os.Getenv("DB_USER"),
+	    	os.Getenv("DB_PASSWORD"),
+	    	os.Getenv("DB_HOST"),
+	    	os.Getenv("DB_PORT"),
+	    	os.Getenv("DB_TESTNAME"),
+	    )
+	}
+
 	SWIFTcode := c.Param("swift-code")
 
 	if strings.Contains(SWIFTcode, "XXX") { // SWIFT belongs to the headquarter
-		hq, valid, err := databaseControl.GetHeadquarter("", SWIFTcode)
+		hq, valid, err := databaseControl.GetHeadquarter(dsn, SWIFTcode)
 		if !valid || err != nil {
 			if strings.Contains(err.Error(), "no headquarter found") {
 				c.JSON(http.StatusNotFound, structs.ReqErr{
@@ -93,7 +117,7 @@ func getBySWIFTcode(c *gin.Context) {
 		return
 
 	} else { // SWIFT belongs to the branch
-		br, valid, err := databaseControl.GetBranch("", SWIFTcode)
+		br, valid, err := databaseControl.GetBranch(dsn, SWIFTcode)
 		if !valid || err != nil {
 			if strings.Contains(err.Error(), "no branch found") {
 				c.JSON(http.StatusNotFound, structs.ReqErr{
@@ -124,8 +148,19 @@ func getBySWIFTcode(c *gin.Context) {
 // @Failure      500  {object}  MessageResponse  "Internal server error"
 // @Router       /swift-codes/country/{ISO2} [get]
 func getAllFromCountry(c *gin.Context) {
+	dsn := ""
+	if os.Getenv("DOCKERIZED") == "yes" && os.Getenv("TESTING") == "yes" {
+		dsn = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true",
+	    	os.Getenv("DB_USER"),
+	    	os.Getenv("DB_PASSWORD"),
+	    	os.Getenv("DB_HOST"),
+	    	os.Getenv("DB_PORT"),
+	    	os.Getenv("DB_TESTNAME"),
+	    )
+	}
+
 	iso2 := c.Param("ISO2")
-	country, valid, err := databaseControl.GetCountry("", iso2)
+	country, valid, err := databaseControl.GetCountry(dsn, iso2)
 	if !valid || err != nil {
 		if strings.Contains(err.Error(), "no country found") {
 			c.JSON(http.StatusNotFound, structs.ReqErr{
@@ -153,6 +188,17 @@ func getAllFromCountry(c *gin.Context) {
 // @Failure      500  {object}  MessageResponse  "Internal server error"
 // @Router       /swift-codes [post]
 func addEntry(c *gin.Context) {
+	dsn := ""
+	if os.Getenv("DOCKERIZED") == "yes" && os.Getenv("TESTING") == "yes" {
+		dsn = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true",
+	    	os.Getenv("DB_USER"),
+	    	os.Getenv("DB_PASSWORD"),
+	    	os.Getenv("DB_HOST"),
+	    	os.Getenv("DB_PORT"),
+	    	os.Getenv("DB_TESTNAME"),
+	    )
+	}
+
 	var newEntry structs.ReqBranch
 	err := c.ShouldBindJSON(&newEntry)
 	if err != nil {
@@ -193,10 +239,10 @@ func addEntry(c *gin.Context) {
 	var entry_type string
 
 	if *newEntry.IsHeadquarter {
-		added, err = databaseControl.AddHeadquarter(databaseControl.Dsn, newEntry)
+		added, err = databaseControl.AddHeadquarter(dsn, newEntry)
 		entry_type = "headquarter"
 	} else {
-		added, err = databaseControl.AddBranch(databaseControl.Dsn, newEntry)
+		added, err = databaseControl.AddBranch(dsn, newEntry)
 		entry_type = "branch"
 	}
 	
@@ -224,8 +270,19 @@ func addEntry(c *gin.Context) {
 // @Failure      500  {object}  MessageResponse  "Internal server error"
 // @Router       /swift-codes/{swift-code} [delete]
 func deleteEntry(c *gin.Context) {
+	dsn := ""
+	if os.Getenv("DOCKERIZED") == "yes" && os.Getenv("TESTING") == "yes" {
+		dsn = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true",
+	    	os.Getenv("DB_USER"),
+	    	os.Getenv("DB_PASSWORD"),
+	    	os.Getenv("DB_HOST"),
+	    	os.Getenv("DB_PORT"),
+	    	os.Getenv("DB_TESTNAME"),
+	    )
+	}
+
 	SWIFTcode := c.Param("swift-code")
-	deleted, err := databaseControl.DeleteEntry("", SWIFTcode)
+	deleted, err := databaseControl.DeleteEntry(dsn, SWIFTcode)
 	if !deleted || err != nil {
 		if strings.Contains(err.Error(), "no entry found") {
 			c.JSON(http.StatusNotFound, structs.ReqErr{

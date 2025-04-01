@@ -1,0 +1,46 @@
+networks:
+  test_network:
+    driver: bridge
+
+services:
+
+  test_db:
+    image: mysql:8
+    restart: no
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: testswiftdb
+      MYSQL_USER: swiftuser
+      MYSQL_PASSWORD: swiftpass
+    ports:
+      - "3308:3306" 
+    healthcheck:
+      test: ["CMD", "sh", "-c", "mysql -uswiftuser -pswiftpass -e 'SHOW DATABASES;' | grep testswiftdb"]
+      interval: 5s
+      timeout: 10s
+      retries: 10
+    networks:
+      - test_network
+  
+  test:
+    build: 
+      context: .
+      dockerfile: ./src/Dockerfile_test
+    ports:
+      - "8080:8080"
+    depends_on:
+      test_db:
+        condition: service_healthy
+    environment:
+      TESTS_PASSED: no 
+      DB_HOST: test_db
+      DB_PORT: 3306
+      DB_USER: swiftuser
+      DB_PASSWORD: swiftpass
+      DB_TESTNAME: testswiftdb
+      DOCKERIZED: yes
+      TESTING: yes
+    restart: no
+
+    networks:
+      - test_network

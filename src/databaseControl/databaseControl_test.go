@@ -13,34 +13,47 @@ import (
 
 // ------------------- FILE: fundamentals -------------------- //
 
-var testCases_connectToDb = []structs.Testcase[string]{
-	{
-		Name: "Valid dsn", 
-		ExpectedOutcome: true, 
-		ExpectedError: nil,
-		Input: Dsn_test,
-	},
-	{
-		Name: "Invalid dsn - invalid password", 
-		ExpectedOutcome: false, 
-		ExpectedError: fmt.Errorf("error verifying connection"),
-		Input: "SWIFTuser:SWIFT@tcp(localhost:3306)/testswiftdb",
-	},
-	{
-		Name: "Invalid dsn - non-existent database", 
-		ExpectedOutcome: false, 
-		ExpectedError: fmt.Errorf("error verifying connection"),
-		Input: "SWIFTuser:SWIFTpass@tcp(localhost:3306)/thisdoesntexist",
-	},
-	{
-		Name: "Invalid dsn - wrong host", 
-		ExpectedOutcome: false, 
-		ExpectedError: fmt.Errorf("error verifying connection"),
-		Input: "SWIFTuser:SWIFTpass@tcp(2000:3306)/testswiftdb",
-	},
-}
-
+var valid_dsn = Dsn_test
 func TestConnectToDb(t *testing.T) {
+	// checking if the app is runing in Docker
+	value := os.Getenv("DOCKERIZED")
+	if value == "yes"{
+		valid_dsn = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true",
+	    	os.Getenv("DB_USER"),
+	    	os.Getenv("DB_PASSWORD"),
+	    	os.Getenv("DB_HOST"),
+	    	os.Getenv("DB_PORT"),
+	    	os.Getenv("DB_TESTNAME"),
+	    )
+	}
+
+	var testCases_connectToDb = []structs.Testcase[string]{
+		{
+			Name: "Valid dsn", 
+			ExpectedOutcome: true, 
+			ExpectedError: nil,
+			Input: valid_dsn,
+		},
+		{
+			Name: "Invalid dsn - invalid password", 
+			ExpectedOutcome: false, 
+			ExpectedError: fmt.Errorf("error verifying connection"),
+			Input: "SWIFTuser:SWIFT@tcp(localhost:3306)/testswiftdb",
+		},
+		{
+			Name: "Invalid dsn - non-existent database", 
+			ExpectedOutcome: false, 
+			ExpectedError: fmt.Errorf("error verifying connection"),
+			Input: "SWIFTuser:SWIFTpass@tcp(localhost:3306)/thisdoesntexist",
+		},
+		{
+			Name: "Invalid dsn - wrong host", 
+			ExpectedOutcome: false, 
+			ExpectedError: fmt.Errorf("error verifying connection"),
+			Input: "SWIFTuser:SWIFTpass@tcp(2000:3306)/testswiftdb",
+		},
+	}
+
 	for _, testCase := range testCases_connectToDb {
 		t.Run(testCase.Name, func(t *testing.T){
 			assert := assert.New(t)
@@ -188,7 +201,7 @@ var testCases_CreateTable = []structs.Testcase[structs.Input_cr_tbl]{
 
 func TestCreateTable(t *testing.T) {
 	// opening a connection to the database
-	dsn := Dsn_test
+	dsn := valid_dsn
 	testdb, _, _ := connectToDb(dsn)
 
 	for _, testCase := range testCases_CreateTable {
@@ -251,13 +264,13 @@ func TestAddCountry(t *testing.T) {
 	}
 
 	t.Run("Setting ut the environment for adding", func(t *testing.T) {
-		out := SetUpBeforeAdd()
+		out := SetUpBeforeAdd(valid_dsn)
 		assert.Equal(t, true, out)
 	})
 
 	for _, tc := range testCases_AddCountry {
 		t.Run(tc.Name, func(t *testing.T) {
-			db, _, _ := connectToDb(Dsn_test)
+			db, _, _ := connectToDb(valid_dsn)
 			result, err := addCountry(db, tc.Input.ISO2, tc.Input.Name, tc.Input.TimeZone)
 
 			assert.Equal(t, tc.ExpectedOutcome, result, "Unexpected outcome")
@@ -326,7 +339,7 @@ func TestAddHeadquarter(t *testing.T) {
 
 	for _, tc := range testCases_AddHeadquarter {
 		t.Run(tc.Name, func(t *testing.T) {
-			result, err := AddHeadquarter(Dsn_test, tc.Input)
+			result, err := AddHeadquarter(valid_dsn, tc.Input)
 
 			assert.Equal(t, tc.ExpectedOutcome, result, "Unexpected outcome")
 			assert.Equal(t, tc.ExpectedError, err, "Unexpected error")
@@ -417,7 +430,7 @@ func TestAddBranch(t *testing.T) {
 
 	for _, tc := range testCases_AddBranch {
 		t.Run(tc.Name, func(t *testing.T) {
-			result, err := AddBranch(Dsn_test, tc.Input)
+			result, err := AddBranch(valid_dsn, tc.Input)
 
 			assert.Equal(t, tc.ExpectedOutcome, result, "Unexpected outcome")
 			assert.Equal(t, tc.ExpectedError, err, "Unexpected error")
@@ -458,7 +471,7 @@ func TestGetBranch(t *testing.T) {
 	for _, tc := range testCases_GetBranch {
 		t.Run(tc.Name, func(t *testing.T) {
 
-			_, result, err := GetBranch(Dsn_test, tc.Input.SwiftCode)
+			_, result, err := GetBranch(valid_dsn, tc.Input.SwiftCode)
 
 			assert.Equal(t, tc.ExpectedOutcome, result, "Unexpected outcome")
 
@@ -500,7 +513,7 @@ func TestGetHeadquarter(t *testing.T) {
 
 	for _, tc := range testCases_GetHeadquarter {
 		t.Run(tc.Name, func(t *testing.T) {
-			_, result, err := GetHeadquarter(Dsn_test, tc.Input.SwiftCode)
+			_, result, err := GetHeadquarter(valid_dsn, tc.Input.SwiftCode)
 
 			assert.Equal(t, tc.ExpectedOutcome, result, "Unexpected outcome")
 			if tc.ExpectedError != nil {
@@ -542,7 +555,7 @@ func TestGetCountry(t *testing.T) {
 
 	for _, tc := range testCases_GetCountry {
 		t.Run(tc.Name, func(t *testing.T) {
-			_, result, err := GetCountry(Dsn_test, tc.Input)
+			_, result, err := GetCountry(valid_dsn, tc.Input)
 
 			assert.Equal(t, tc.ExpectedOutcome, result, "Unexpected outcome")
 			if tc.ExpectedError != nil {
@@ -597,7 +610,7 @@ func TestDeleteEntry(t *testing.T) {
 
 	for _, tc := range testCases_DeleteEntry {
 		t.Run(tc.Name, func(t *testing.T) {
-			result, err := DeleteEntry(Dsn_test, tc.Input)
+			result, err := DeleteEntry(valid_dsn, tc.Input)
 			
 			assert.Equal(t, tc.ExpectedOutcome, result, "unexpected outcome")
 			if tc.ExpectedError != nil {

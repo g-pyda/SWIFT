@@ -26,7 +26,7 @@ type ReqHeadquarterBranch struct {
     CountryName string `json:"countryName"`
     IsHeadquarter bool `json:"isHeadquarter"`
     SwiftCode string `json:"swiftCode"`
-    Branches *[]ReqBranch `json:"branches"`
+    Branches *[]ReqBranch `json:"branches,omitempty"`
 }
 
 type ReqCountry struct {

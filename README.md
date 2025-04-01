@@ -46,16 +46,18 @@ go run .
 
 #### Running with Docker
 
-1. **Build the Docker Image**
+1. **Reassure you are placed in *SWIFT* directory**
+
+2. **Build the Docker Image**
 
 ```sh
-docker-compose build
+docker-compose -f docker-compose.yml build
 ```
 
-2. **Run the Container**
+3. **Run the Container**
 
 ```sh
-docker-compose up
+docker-compose -f docker-compose.yml up
 ```
 
 The application will now be accessible at `http://localhost:8080`.
@@ -93,7 +95,9 @@ This project uses a multi-stage Docker build to optimize the container size:
 
 ## Testing
 
-Testing can be easily performed through *testing* go module in this project as follows:
+#### Testing locally (without Docker)
+
+It can be easily performed through *testing* go module in this project as follows:
 
 1. Ensure you're placed in the *src* directory 
 2. Run the first test for *xlsxParser* package 
@@ -115,4 +119,23 @@ go test ./REST
 ```
 
 **REMARK: REST test won't be executed if the databaseControl test has failed**
+
+#### Testing within the Docker container
+
+It can be easily performed through *testing* go module in this project as follows:
+
+1. Ensure you're placed in the *SWIFT* directory 
+2. Build the image of API test 
+
+```sh
+docker-compose -f docker-compose.test.yml build
+```
+
+3. Run the container in a container
+
+```sh
+docker-compose -f docker-compose.test.yml up
+```
+
+4. After the evaluation of all the test, press [Ctrl+C] to exit  
 

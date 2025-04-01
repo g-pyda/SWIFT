@@ -59,6 +59,7 @@ func main() {
 	SWIFTdata, out, err := xlsxParser.Parse(fileAddress, "Sheet1")
 	if !out || err != nil {
 		fmt.Println("Parsing of xlsx data failed")
+		fmt.Println(err)
 		return
 	}
 
